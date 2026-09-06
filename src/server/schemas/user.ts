@@ -1,5 +1,14 @@
 import { z } from 'zod';
+import { isValidObjectId } from 'mongoose';
 import { UserZodSchema } from '../collections/User';
+
+// Shared id validation: a malformed id is the caller's mistake, so it is
+// rejected at the input boundary (tRPC turns this into BAD_REQUEST) instead of
+// reaching mongoose and surfacing as a CastError.
+const objectIdSchema = z
+  .string()
+  .min(1, 'User ID is required')
+  .refine(isValidObjectId, 'Invalid user ID');
 
 // Base user schema without timestamps for input operations
 const baseUserSchema = UserZodSchema.omit({ createdAt: true, updatedAt: true });
@@ -7,17 +16,15 @@ const baseUserSchema = UserZodSchema.omit({ createdAt: true, updatedAt: true });
 // Input schemas for user operations
 export const createUserSchema = baseUserSchema;
 
-export const updateUserSchema = z.object({
-  id: z.string().min(1, 'User ID is required'),
-}).merge(baseUserSchema.partial());
-
-export const getUserSchema = z.object({
-  id: z.string().min(1, 'User ID is required'),
+const userIdSchema = z.object({
+  id: objectIdSchema,
 });
 
-export const deleteUserSchema = z.object({
-  id: z.string().min(1, 'User ID is required'),
-});
+export const updateUserSchema = userIdSchema.merge(baseUserSchema.partial());
+
+export const getUserSchema = userIdSchema;
+
+export const deleteUserSchema = userIdSchema;
 
 // Output schemas
 export const userOutputSchema = z.object({
