@@ -32,5 +32,12 @@
     "tailwindcss": "^4",
     "trpc-ui": "^1.0.15",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@tailwindcss/oxide",
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }
